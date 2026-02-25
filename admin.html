@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم LOUMOVYA</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+body{font-family:'Cairo',sans-serif;direction:rtl;padding:30px;background:#f5f1ed;margin:0;}
+.admin-box{max-width:600px;margin:auto;background:white;padding:30px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,0.08);}
+h2{text-align:center;margin-bottom:20px;}
+input,select,textarea{width:100%;padding:12px;margin-bottom:15px;border-radius:10px;border:1px solid #ddd;font-family:'Cairo',sans-serif;}
+textarea{resize:none;}
+input[type="file"]{border:none;}
+button{width:100%;padding:12px;background:#3e2723;color:white;border:none;border-radius:30px;font-weight:600;cursor:pointer;transition:0.3s;}
+button:hover{background:#a1887f;}
+.preview{display:flex;gap:10px;margin-bottom:15px;}
+.preview img{width:120px;border-radius:15px;}
+.products-list{margin-top:30px;}
+.product-item{background:#f9f6f4;padding:10px;border-radius:10px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;font-size:14px;}
+.delete-btn{background:#b71c1c;color:white;padding:5px 10px;border:none;border-radius:8px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="admin-box">
+<h2>لوحة إدارة المنتجات مع صور متعددة</h2>
+
+<input type="text" id="name" placeholder="اسم المنتج">
+<input type="number" id="price" placeholder="الثمن بالدرهم المغربي">
+<textarea id="description" placeholder="وصف المنتج" rows="3"></textarea>
+<select id="category">
+<option value="مكملات">مكملات</option>
+<option value="تجميل">تجميل</option>
+<option value="ملابس">ملابس</option>
+</select>
+<input type="file" id="imageInput" accept="image/*" multiple>
+<div class="preview" id="preview"></div>
+<button onclick="addProduct()">إضافة المنتج</button>
+<div class="products-list" id="productsList"></div>
+</div>
+
+<script>
+let imagesBase64 = [];
+let products = JSON.parse(localStorage.getItem("products")) || [];
+const preview=document.getElementById("preview");
+const imageInput=document.getElementById("imageInput");
+
+imageInput.addEventListener("change",function(){
+imagesBase64=[];
+preview.innerHTML="";
+Array.from(this.files).forEach(file=>{
+let reader=new FileReader();
+reader.onload=function(e){
+imagesBase64.push(e.target.result);
+let img=document.createElement("img");
+img.src=e.target.result;
+preview.appendChild(img);
+}
+reader.readAsDataURL(file);
+});
+});
+
+function addProduct(){
+if(imagesBase64.length===0){alert("اختر صور للمنتج");return;}
+let product={
+name:document.getElementById("name").value,
+price:document.getElementById("price").value,
+description:document.getElementById("description").value,
+category:document.getElementById("category").value,
+images:imagesBase64
+};
+products.push(product);
+localStorage.setItem("products",JSON.stringify(products));
+alert("تمت إضافة المنتج ✅");
+location.reload();
+}
+
+function displayProducts(){
+let container=document.getElementById("productsList");
+container.innerHTML="";
+products.forEach((p,index)=>{
+container.innerHTML+=`<div class="product-item"><span>${p.name} - ${p.price} درهم</span><button class="delete-btn" onclick="deleteProduct(${index})">حذف</button></div>`;
+});
+}
+
+function deleteProduct(index){products.splice(index,1);localStorage.setItem("products",JSON.stringify(products));location.reload();}
+displayProducts();
+</script>
+
+</body>
+</html>
